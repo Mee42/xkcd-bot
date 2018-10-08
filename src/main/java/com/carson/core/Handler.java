@@ -12,6 +12,29 @@ import java.nio.file.Files;
 import java.util.List;
 
 public class Handler {
+
+    private final String fileStr;
+    private final String altStr;
+
+    public static final String REPLACEMENT_STRING = "[{REPLACEMENT_STRING\\\\//}]";
+
+
+    public Handler(String file, String altStr) {
+        this.fileStr = file;
+        this.altStr = altStr;
+    }
+
+    public Handler(String directory){
+        if(!directory.endsWith("/"))
+            directory = directory + "/";
+        fileStr = directory + REPLACEMENT_STRING + ".png";
+        altStr = directory + "alt/" + REPLACEMENT_STRING;
+        new File(directory + "alt/").mkdir();
+        System.out.println("fileStr:" + fileStr +
+                "\naltStr:" + altStr);
+    }
+
+
     @EventSubscriber
     public void onMessage(MessageReceivedEvent event){
         String content = event.getMessage().getContent();
@@ -28,18 +51,20 @@ public class Handler {
                     runWithInt(event, i);
                     return;
                 } catch (NumberFormatException e) { }catch (ArrayIndexOutOfBoundsException e){ }
-                
                 String str = content.replaceFirst("xkcd ","");
                 String url = Googler.Google("site:xkcd.com   " + str);
-                String number = url.replaceFirst("http|https","")
-                        .replaceFirst("www","")
-                        .replaceFirst("xkcd.com/","");//TODO TEST
+                System.out.print("this:" + url);
+                String number = url.replaceFirst("https://xkcd.com/","")
+                        .replaceAll("\"[^\\d.]\"","")
+                        .replaceAll("/","");//TODO TEST
+
+                System.out.println("    to this:" + number);
+                Thread.sleep(1000);
                 int numberInt = Integer.parseInt(number);
                 runWithInt(event,numberInt);
                 return;
             }
-        }catch(Exception e){//TODO FIX
-            e.printStackTrace();
+        }catch(Exception e){
             sendMessage(event, "there was a problem processing your request.");
         }
 
@@ -52,8 +77,11 @@ public class Handler {
 
     private void runWithInt(MessageReceivedEvent event, int no) throws IOException {
 //		int no =(int)(Math.random() * 1800 + 100);
-        File file = new File("/home/carson/java/files/xkcd/" + no + ".png");
-        File alt = new File("/home/carson/java/files/xkcd/alt/" + no);
+//        File fileStr = new File("/home/carson/java/files/xkcd/" + no + ".png");
+//        File alt = new File("/home/carson/java/files/xkcd/alt/" + no);
+        File file = new File(fileStr.replace(REPLACEMENT_STRING,no + ""));
+        File alt  = new File(altStr.replace(REPLACEMENT_STRING,no + ""));
+
 
         if(file.exists() && alt.exists()) {
             sendFile(no, event,file,alt);
@@ -77,15 +105,18 @@ public class Handler {
     }
 
 
-    private void sendFile(int no, MessageReceivedEvent event, File file, File alt) {
+    private void sendFile(int no, MessageReceivedEvent event, File file, File alt) throws IOException {
         try {
+            String line = Files.readAllLines(alt.toPath()).get(0);
             event.getChannel().sendFile(file);
-            sendMessage(event, "`" + no + ":`"  + Files.readAllLines(alt.toPath()).get(0));
+            sendMessage(event, "`" + no + ":`"  + line);
         } catch (FileNotFoundException e) {
-            sendMessage(event, "tryed to find a file we know exists. problem");
-            System.out.println("ERROR: missread a file");
+            sendMessage(event, "tryed to find a fileStr we know exists. problem");
+            System.out.println("ERROR: missread a fileStr");
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (IndexOutOfBoundsException e){
+            throw new IOException("fileStr has no content");
         }
     }
 

@@ -9,16 +9,32 @@ import java.nio.file.Files;
 
 public class Main {
     public static void main(String[] args) {
+        if(args.length == 0){
+            throw new IllegalArgumentException("you need to specify an argument");
+        }
+        switch(args[0]){
+            case "desktop":
+                run("/home/carson/java/files/xkcd/");
+                break;
+            case "server":
+                run(null);//TODO
+                break;
+            default:
+                run(args[0]);
+        }
+    }
 
-        String token = "";
+
+    private static void run(String dir){
+        String token;
 
         try {
             token = Files.readAllLines(new File("key").toPath()).get(0);
         } catch (IOException e) {
             e.printStackTrace();
             return;
-        }
 
+        }
         IDiscordClient client = new ClientBuilder()
                 .withToken(token)
                 .setMaxReconnectAttempts(9999)
@@ -26,7 +42,7 @@ public class Main {
                 .build();
 
         // Register a listener via the EventSubscriber annotation which allows for organisation and delegation of events
-        Handler handle = new Handler();
+        Handler handle = new Handler(dir);
         client.getDispatcher().registerListener(handle);
         client.login();
     }
