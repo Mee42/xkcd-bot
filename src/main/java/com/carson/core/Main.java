@@ -17,7 +17,7 @@ public class Main {
                 run("/home/carson/java/files/xkcd/");
                 break;
             case "server":
-                run(null);//TODO
+                run("/home/carson/xkcd/files");
                 break;
             default:
                 run(args[0]);
