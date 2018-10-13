@@ -19,14 +19,11 @@ public class Handler {
     public static final String REPLACEMENT_STRING = "[{REPLACEMENT_STRING\\\\//}]";
 
 
-    public Handler(String file, String altStr) {
-        this.fileStr = file;
-        this.altStr = altStr;
-    }
 
     public Handler(String directory){
         if(!directory.endsWith("/"))
             directory = directory + "/";
+
         fileStr = directory + REPLACEMENT_STRING + ".png";
         altStr = directory + "alt/" + REPLACEMENT_STRING;
         new File(directory + "alt/").mkdir();
