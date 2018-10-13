@@ -66,6 +66,7 @@ public class Handler {
             }
         }catch(Exception e){
             sendMessage(event, "there was a problem processing your request.");
+            e.printStackTrace();
         }
 
     }
