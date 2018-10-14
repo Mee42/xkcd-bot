@@ -34,7 +34,8 @@ public class Handler {
 
     @EventSubscriber
     public void onMessage(MessageReceivedEvent event){
-        String content = event.getMessage().getContent();
+        String content = event.getMessage().getContent()
+          .toLowerCase();
         System.out.println(event.getAuthor().getName() + "  :  " + content);
         if(!content.startsWith("xkcd"))
             return;
